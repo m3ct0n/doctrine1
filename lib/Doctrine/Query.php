@@ -492,7 +492,14 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                 $parent = $this->_conn->getTable($owner);
                 $columnName = $parent->getColumnName($fieldName);
                 $parentAlias = $this->getSqlTableAlias($componentAlias . '.' . $parent->getComponentName());
-                $sql[] = $this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName)
+                //PATCH VS 2015-05-21 PREPARATION POUR PHP 5.6 PDO OCI:
+                if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
+                     $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
+                } else {
+                    $fieldSelect = $this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
+                }
+                
+                $sql[] = $fieldSelect
                        . ' AS '
                        . $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
             } else {
@@ -504,7 +511,13 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                     $columnName = $table->getColumnName($fieldName);
                     $aliasSql = $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
                 }
-                $sql[] = $this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName)
+                //PATCH VS 2015-05-21 PREPARATION POUR PHP 5.6 PDO OCI:
+                if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
+                    $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
+                } else {
+                    $fieldSelect = $this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
+                }
+                $sql[] = $fieldSelect
                        . ' AS '
                        . $aliasSql;
             }
