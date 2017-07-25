@@ -488,12 +488,25 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                 $parent = $this->_conn->getTable($owner);
                 $columnName = $parent->getColumnName($fieldName);
                 $parentAlias = $this->getSqlTableAlias($componentAlias . '.' . $parent->getComponentName());
-                $sql[] = $this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName)
+
+                if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
+                    $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
+                } else {
+                    $fieldSelect = $this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
+                }
+
+                $sql[] = $fieldSelect
                        . ' AS '
                        . $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
             } else {
                 $columnName = $table->getColumnName($fieldName);
-                $sql[] = $this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName)
+                if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
+                    $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
+                } else {
+                    $fieldSelect = $this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
+                }
+                
+                $sql[] = $fieldSelect
                        . ' AS '
                        . $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
             }
