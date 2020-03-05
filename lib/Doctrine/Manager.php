@@ -89,6 +89,7 @@ class Doctrine_Manager extends Doctrine_Configurable implements Countable, Itera
         'oci8'     => 'Doctrine_Connection_Oracle',
         'oracle'   => 'Doctrine_Connection_Oracle',
         'mssql'    => 'Doctrine_Connection_Mssql',
+        'sqlsrv'    => 'Doctrine_Connection_Mssql',
         'dblib'    => 'Doctrine_Connection_Mssql',
         'odbc'     => 'Doctrine_Connection_Mssql',
         'mock'     => 'Doctrine_Connection_Mock'
@@ -847,3 +848,4 @@ class Doctrine_Manager extends Doctrine_Configurable implements Countable, Itera
         return $this->_extensions;
     }
 }
+

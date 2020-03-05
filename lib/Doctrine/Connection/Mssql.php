@@ -133,7 +133,7 @@ class Doctrine_Connection_Mssql extends Doctrine_Connection_Common
         }
 
         if ($offset == 0) {
-           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT\1 TOP ' . $limit . ' ', $query);
+           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT TOP ' . $limit . ' ', $query);
         } else {
             $over = stristr($query, 'ORDER BY');
 
@@ -381,3 +381,4 @@ class Doctrine_Connection_Mssql extends Doctrine_Connection_Common
         return parent::insert($table, $fields);
     }
 }
+
