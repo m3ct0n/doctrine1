@@ -31,12 +31,12 @@
  * @link        www.doctrine-project.org
  * @since       1.0
  */
-class Doctrine_Connection_Mssql extends Doctrine_Connection_Common
+class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
 {
     /**
      * @var string $driverName                  the name of this connection driver
      */
-    protected $driverName = 'Mssql';
+    protected $driverName = 'Sqlsrv';
 
     /**
      * the constructor
