@@ -122,7 +122,7 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         $orderby = stristr($query, 'ORDER BY');
 
         if ($offset !== false && $orderby === false) {
-            throw new Doctrine_Connection_Exception("OFFSET cannot be used in MSSQL without ORDER BY due to emulation reasons.");
+          //  throw new Doctrine_Connection_Exception("OFFSET cannot be used in MSSQL without ORDER BY due to emulation reasons.");
         }
 
         $limit = intval($limit);
@@ -381,3 +381,4 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         return parent::insert($table, $fields);
     }
 }
+
