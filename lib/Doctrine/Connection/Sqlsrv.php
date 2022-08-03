@@ -133,7 +133,7 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         }
 
         if ($offset == 0) {
-           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT TOP ' . $limit . ' ', $query);
+           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT DISTINCT TOP ' . $limit . ' ', $query);
         } else {
             $over = stristr($query, 'ORDER BY');
 
@@ -151,13 +151,13 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
             if (0 === strpos($query, 'DISTINCT'))
             {
               $query = substr($query, strlen('DISTINCT '));
-              $select .= ' DISTINCT';
+              //$select .= ' DISTINCT';
             }
 
             $start = $offset + 1;
             $end = $offset + $limit;
 
-            $query = "SELECT * FROM ($select ROW_NUMBER() OVER ($over) AS [DOCTRINE_ROWNUM], $query) AS [doctrine_tbl] WHERE [DOCTRINE_ROWNUM] BETWEEN $start AND $end";
+            $query = "SELECT * FROM ($select DISTINCT ROW_NUMBER() OVER ($over) AS [DOCTRINE_ROWNUM], $query) AS [doctrine_tbl] WHERE [DOCTRINE_ROWNUM] BETWEEN $start AND $end";
         }
 
         return $query;
@@ -381,4 +381,3 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         return parent::insert($table, $fields);
     }
 }
-
