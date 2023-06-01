@@ -30,7 +30,14 @@
  * @since       1.0
  * @version     $Revision$
  */
-class Doctrine_Manager_TestCase extends Doctrine_UnitTestCase {
+class Doctrine_Manager_TestCase extends Doctrine_UnitTestCase
+{
+    protected $conn1_database;
+    protected $conn2_database;
+
+    protected $conn1;
+    protected $conn2;
+
     public function testGetInstance() {
         $this->assertTrue(Doctrine_Manager::getInstance() instanceOf Doctrine_Manager);
     }
@@ -166,13 +173,14 @@ class Doctrine_Manager_TestCase extends Doctrine_UnitTestCase {
     {
       $dsn = 'mysql://' . urlencode('test/t') . ':' . urlencode('p@ssword') . '@localhost/' . urlencode('db/name');
 
-      $conn = Doctrine_Manager::connection($dsn);
+      $conn = $this->openAdditionalConnection($dsn);
       $options = $conn->getOptions();
 
       $this->assertEqual($options['username'], 'test/t');
       $this->assertEqual($options['password'], 'p@ssword');
       $this->assertEqual($options['dsn'], 'mysql:host=localhost;dbname=db/name');
     }
+
     public function prepareData() { }
     public function prepareTables() { }
 

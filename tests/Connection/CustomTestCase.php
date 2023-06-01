@@ -32,6 +32,9 @@
  */
 class Doctrine_Connection_Custom_TestCase extends Doctrine_UnitTestCase 
 {
+    protected $_conn;
+    protected $_dbh;
+
     public function setUp()
     {
         $manager = Doctrine_Manager::getInstance();
@@ -49,7 +52,10 @@ class Doctrine_Connection_Custom_TestCase extends Doctrine_UnitTestCase
 
 class Doctrine_Connection_Test extends Doctrine_Connection_Common
 {
-    
+    /**
+     * @var string $driverName The name of this connection driver
+     */
+    protected $driverName = 'Mock';
 }
 
 class Doctrine_Adapter_Test implements Doctrine_Adapter_Interface
