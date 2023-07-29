@@ -133,7 +133,7 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         }
 
         if ($offset == 0) {
-           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT DISTINCT TOP ' . $limit . ' ', $query);
+           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT TOP ' . $limit . ' ', $query);
         } else {
             $over = stristr($query, 'ORDER BY');
 
