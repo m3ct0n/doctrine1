@@ -490,7 +490,7 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                 $parentAlias = $this->getSqlTableAlias($componentAlias . '.' . $parent->getComponentName());
 
                 if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
-                    $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
+                    $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
                 } else {
                     $fieldSelect = $this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
                 }
