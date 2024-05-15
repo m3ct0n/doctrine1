@@ -480,7 +480,7 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
         }
 
         $sql = array();
-        foreach ($fields as $fieldAlias => $fieldName) {
+        foreach ($fields as $fieldName) {
             $columnName = $table->getColumnName($fieldName);
             if (($owner = $table->getColumnOwner($columnName)) !== null &&
                     $owner !== $table->getComponentName()) {
@@ -488,34 +488,27 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                 $parent = $this->_conn->getTable($owner);
                 $columnName = $parent->getColumnName($fieldName);
                 $parentAlias = $this->getSqlTableAlias($componentAlias . '.' . $parent->getComponentName());
-                //PATCH VS 2015-05-21 PREPARATION POUR PHP 5.6 PDO OCI:
+
                 if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
-                     $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
+                    $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
                 } else {
                     $fieldSelect = $this->_conn->quoteIdentifier($parentAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
                 }
-                
+
                 $sql[] = $fieldSelect
                        . ' AS '
                        . $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
             } else {
-                // Fix for http://www.doctrine-project.org/jira/browse/DC-585
-                // Take the field alias if available
-                if (isset($this->_aggregateAliasMap[$fieldAlias])) {
-                    $aliasSql = $this->_aggregateAliasMap[$fieldAlias];
-                } else {
-                    $columnName = $table->getColumnName($fieldName);
-                    $aliasSql = $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
-                }
-                //PATCH VS 2015-05-21 PREPARATION POUR PHP 5.6 PDO OCI:
+                $columnName = $table->getColumnName($fieldName);
                 if ($this->_conn instanceof Doctrine_Connection_Oracle && substr($columnName, -2) == '_d') {
                     $fieldSelect = 'TO_CHAR('.$this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName).')';
                 } else {
                     $fieldSelect = $this->_conn->quoteIdentifier($tableAlias) . '.' . $this->_conn->quoteIdentifier($columnName);
                 }
+                
                 $sql[] = $fieldSelect
                        . ' AS '
-                       . $aliasSql;
+                       . $this->_conn->quoteIdentifier($tableAlias . '__' . $columnName);
             }
         }
 
@@ -668,14 +661,11 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
 
                 $this->_queryComponents[$componentAlias]['agg'][$index] = $alias;
 
-                $this->_neededTables[] = $tableAlias;
-
-                // Fix for http://www.doctrine-project.org/jira/browse/DC-585
-                // Add selected columns to pending fields
                 if (preg_match('/^([^\(]+)\.(\'?)(.*?)(\'?)$/', $expression, $field)) {
-                    $this->_pendingFields[$componentAlias][$alias] = $field[3];
+                    $this->_queryComponents[$componentAlias]['agg_field'][$index] = $field[3];
                 }
 
+                $this->_neededTables[] = $tableAlias;
             } else {
                 $e = explode('.', $terms[0]);
 
