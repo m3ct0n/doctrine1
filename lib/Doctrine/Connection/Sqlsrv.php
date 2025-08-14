@@ -69,7 +69,13 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
 
         parent::__construct($manager, $adapter);
     }
-
+    
+    public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
+    {
+        $this->exec('SET LANGUAGE us_english');
+        $this->exec('SET DATEFORMAT mdy');
+    }
+    
     /**
      * quoteIdentifier
      * Quote a string so it can be safely used as a table / column name
@@ -381,3 +387,4 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         return parent::insert($table, $fields);
     }
 }
+
