@@ -72,7 +72,6 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
     
     public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
     {
-        $this->dbh->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
         $this->exec('SET LANGUAGE us_english');
         $this->exec('SET DATEFORMAT mdy');
     }
@@ -388,5 +387,6 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         return parent::insert($table, $fields);
     }
 }
+
 
 
