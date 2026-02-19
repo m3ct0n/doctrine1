@@ -72,6 +72,7 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
     
     public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
     {
+        $this->dbh->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
         $this->exec('SET LANGUAGE us_english');
         $this->exec('SET DATEFORMAT mdy');
     }
@@ -124,47 +125,16 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         if ($limit === false || !($limit > 0)) {
             return $query;
         }
-
-        $orderby = stristr($query, 'ORDER BY');
-
-        if ($offset !== false && $orderby === false) {
-          //  throw new Doctrine_Connection_Exception("OFFSET cannot be used in MSSQL without ORDER BY due to emulation reasons.");
-        }
-
         $limit = intval($limit);
         $offset = intval($offset);
-
         if ($offset < 0) {
             throw new Doctrine_Connection_Exception("LIMIT argument offset=$offset is not valid");
         }
-
-        if ($offset == 0) {
-           $query = preg_replace('/^SELECT( DISTINCT)?\s/i', 'SELECT TOP ' . $limit . ' ', $query);
-        } else {
-            $over = stristr($query, 'ORDER BY');
-
-            if (!$over) {
-                $over = 'ORDER BY (SELECT 0)';
-            } else {
-                // Remove ORDER BY clause from $query
-                $query = stristr($query, 'ORDER BY', true);
-            }
-
-            // Remove the first SELECT from query
-            $query = substr($query, strlen('SELECT '));
-            $select = 'SELECT';
-
-            if (0 === strpos($query, 'DISTINCT'))
-            {
-              $query = substr($query, strlen('DISTINCT '));
-              //$select .= ' DISTINCT';
-            }
-
-            $start = $offset + 1;
-            $end = $offset + $limit;
-
-            $query = "SELECT * FROM ($select DISTINCT ROW_NUMBER() OVER ($over) AS [DOCTRINE_ROWNUM], $query) AS [doctrine_tbl] WHERE [DOCTRINE_ROWNUM] BETWEEN $start AND $end";
+        if (stristr($query, 'ORDER BY') === false) {
+            $query .= ' ORDER BY (SELECT 0)';
         }
+
+        $query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
 
         return $query;
     }
@@ -387,6 +357,7 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
         return parent::insert($table, $fields);
     }
 }
+
 
 
 
