@@ -195,11 +195,64 @@ class Doctrine_Connection_Sqlsrv extends Doctrine_Connection_Common
      * Creates dbms specific LIMIT/OFFSET SQL for the subqueries that are used in the
      * context of the limit-subquery algorithm.
      *
+     * SQL Server refuses "SELECT DISTINCT pk ... ORDER BY column" when the column is not selected
+     * (limit subquery ordered by a joined column): "ORDER BY items must appear in the select list
+     * if SELECT DISTINCT is specified". The DISTINCT is replaced by a GROUP BY on the primary key and
+     * each ORDER BY term becomes MIN(term) ASC / MAX(term) DESC: the subquery keeps a single column
+     * (it is used in "pk IN (...)") and returns each record once, so pages stay complete.
+     *
      * @return string
      */
     public function modifyLimitSubquery(Doctrine_Table $rootTable, $query, $limit = false, $offset = false, $isManip = false)
     {
+        if (preg_match('/^SELECT DISTINCT (\S+) FROM /i', $query, $select)
+            && ($position = strripos($query, ' ORDER BY ')) !== false
+            && stripos($query, ' GROUP BY ') === false && stripos($query, ' HAVING ') === false) {
+            $primaryKey = $select[1];
+            $terms = array();
+            foreach ($this->splitOrderByTerms(substr($query, $position + strlen(' ORDER BY '))) as $term) {
+                preg_match('/^(.*?)(?:\s+(ASC|DESC))?$/is', trim($term), $m);
+                // Already an aggregate: keep the original subquery
+                if (preg_match('/\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i', $m[1])) {
+                    return $this->modifyLimitQuery($query, $limit, $offset, $isManip, true);
+                }
+                $direction = (isset($m[2]) && strtoupper($m[2]) === 'DESC') ? 'DESC' : 'ASC';
+                $terms[] = ($m[1] === $primaryKey ? $m[1] : (($direction === 'DESC' ? 'MAX(' : 'MIN(') . $m[1] . ')')) . ' ' . $direction;
+            }
+            $query = 'SELECT ' . substr($query, strlen('SELECT DISTINCT '), $position - strlen('SELECT DISTINCT '))
+                . ' GROUP BY ' . $primaryKey . ' ORDER BY ' . implode(', ', $terms);
+        }
+
         return $this->modifyLimitQuery($query, $limit, $offset, $isManip, true);
+    }
+
+    /**
+     * Splits an ORDER BY clause on the commas that are not inside parentheses
+     *
+     * @param string $orderBy
+     * @return array
+     */
+    private function splitOrderByTerms($orderBy)
+    {
+        $terms = array();
+        $depth = 0;
+        $current = '';
+        foreach (str_split($orderBy) as $char) {
+            if ($char === '(') {
+                $depth++;
+            } elseif ($char === ')') {
+                $depth--;
+            }
+            if ($char === ',' && $depth === 0) {
+                $terms[] = $current;
+                $current = '';
+                continue;
+            }
+            $current .= $char;
+        }
+        $terms[] = $current;
+
+        return $terms;
     }
 
     /**
